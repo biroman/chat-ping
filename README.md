@@ -29,10 +29,6 @@
 - If you want to modify the emotes used in the ping, you'll need to edit the `collectLastNames()` function within the `content.js` file.
 - To expand the blacklist with additional names, you can add the names to the `blacklist` array in the `content.js` file.
 
-## Removal
-
-- If you wish to remove your saved Twitch username and OAuth token, click the "Discard" button. This will enable the input fields for new input.
-
 ## Support
 
 - If you encounter any issues or have any questions, please open an issue on GitHub or dm me on Twitch.
