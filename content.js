@@ -67,7 +67,7 @@ class ChatObserver {
   
     setInterval(() => {
       const collectedNames = this.collectNames();
-      const collectedNamesCount = (collectedNames.match(/@/g) || []).length;
+      const collectedNamesCount = collectedNames.split(' ').length - 2; // Subtract 2 for the two words in "SOYSCREAM ALERT"
       countText.textContent = `${collectedNamesCount}x`;
       bellIcon.textContent = "🔔";
     }, 1000);
@@ -108,15 +108,15 @@ class ChatObserver {
     const uniqueNames = new Set();
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
     const blacklist = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"]; //You might get timed out, for example: darkface____ will time you out because of "racism" thats why I blacklisted his name.
-
+  
     chatElements.forEach((chatElement) => {
       const username = chatElement.textContent.trim();
-
+  
       if (username && englishLettersRegex.test(username) && !blacklist.includes(username.toLowerCase())) {
-        uniqueNames.add(`@${username}`);
+        uniqueNames.add(username); // Removed "@" here
       }
     });
-
+  
     const namesLimited = Array.from(uniqueNames).reverse().slice(0, limit);
     return `${namesLimited.join(" ")} \n\nSOYSCREAM ALERT`;
   }
