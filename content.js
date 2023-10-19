@@ -1,6 +1,6 @@
 const CHAT_CONTAINER_SELECTOR = "#live-page-chat > div > div > div.Layout-sc-1xcs6mc-0.gTweXu.chat-shell.chat-shell__expanded > div > div > section > div > seventv-container > div > div:nth-child(2) > div.Layout-sc-1xcs6mc-0.bGbtMS.chat-input__buttons-container";
 const CHAT_ELEMENTS_SELECTOR = "#seventv-message-container > main > div > span > div > div > span > div.seventv-chat-user > span.seventv-chat-user-username > span > span";
-const LAST_NAMES_LIMIT = 20;
+const NAMES_LIMIT = 20;
 
 class ChatObserver {
   constructor() {
@@ -66,7 +66,7 @@ class ChatObserver {
     bellIcon.addEventListener("mouseover", () => this.previewAlert(bellIcon));
   
     setInterval(() => {
-      const collectedNames = this.collectLastNames();
+      const collectedNames = this.collectNames();
       const collectedNamesCount = (collectedNames.match(/@/g) || []).length;
       countText.textContent = `${collectedNamesCount}x`;
       bellIcon.textContent = "🔔";
@@ -76,7 +76,7 @@ class ChatObserver {
   }
 
   sendAlert() {
-    const collectedNames = this.collectLastNames();
+    const collectedNames = this.collectNames();
     console.log(collectedNames);
   
     const url = window.location.href;
@@ -99,27 +99,26 @@ class ChatObserver {
   }
 
   previewAlert(alertButton) {
-    const previewMessage = this.collectLastNames();
+    const previewMessage = this.collectNames();
     console.log(`Preview: ${previewMessage}`);
   }
 
-  collectLastNames(limit = LAST_NAMES_LIMIT) {
+  collectNames(limit = NAMES_LIMIT) {
     const chatElements = document.querySelectorAll(CHAT_ELEMENTS_SELECTOR);
-    const uniqueLastNames = new Set();
+    const uniqueNames = new Set();
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
     const blacklist = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"]; //You might get timed out, for example: darkface____ will time you out because of "racism" thats why I blacklisted his name.
 
     chatElements.forEach((chatElement) => {
       const username = chatElement.textContent.trim();
-      const lastName = username.split(" ").pop();
 
-      if (lastName && englishLettersRegex.test(lastName) && !blacklist.includes(lastName.toLowerCase())) {
-        uniqueLastNames.add(`@${lastName}`);
+      if (username && englishLettersRegex.test(username) && !blacklist.includes(username.toLowerCase())) {
+        uniqueNames.add(`@${username}`);
       }
     });
 
-    const lastNamesLimited = Array.from(uniqueLastNames).reverse().slice(0, limit);
-    return `${lastNamesLimited.join(" ")} \n\nSOYSCREAM ALERT`;
+    const namesLimited = Array.from(uniqueNames).reverse().slice(0, limit);
+    return `${namesLimited.join(" ")} \n\nSOYSCREAM ALERT`;
   }
 }
 
