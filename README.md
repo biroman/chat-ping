@@ -29,6 +29,11 @@
 - If you want to modify the emotes used in the ping, you'll need to edit the `collectLastNames()` function within the `content.js` file.
 - To expand the blacklist with additional names, you can add the names to the `blacklist` array in the `content.js` file.
 
+## Known bugs
+
+- If your chrome tab is inactive for a while, the ping button might stop working. Refresh the page to fix.
+- Sometimes when you enter the chat, the ping button might not show up. Refresh to page to fix.
+
 ## Support
 
 - If you encounter any issues or have any questions, please open an issue on GitHub or dm me on Twitch.
