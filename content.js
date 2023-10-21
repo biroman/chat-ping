@@ -3,25 +3,25 @@ const CHAT_ELEMENTS_SELECTOR = ".seventv-chat-user-username";
 
 class ChatObserver {
   constructor() {
-    this.observer = new MutationObserver(() => this.observeChat());
-    this.observer.observe(document.body, { childList: true, subtree: true });
-    this.chatContainer = null;
-    this.token = null;
-    this.username = null;
-    this.channel = null;
-    this.uniqueNames = [];
-    this.checkTokenAndUsername();
+    this.mutationObserver = new MutationObserver(() => this.observeChat());
+    this.mutationObserver.observe(document.body, { childList: true, subtree: true });
+    this.chatContainerElement = null;
+    this.authToken = null;
+    this.userName = null;
+    this.channelName = null;
+    this.uniqueUserNames = [];
+    this.verifyAuthTokenAndUserName();
   }
 
-  checkTokenAndUsername() {
+  verifyAuthTokenAndUserName() {
     chrome.storage.sync.get(['token', 'username'], (result) => {
-      this.token = result.token;
-      this.username = result.username;
-      if (!this.token || !this.username) {
+      this.authToken = result.token;
+      this.userName = result.username;
+      if (!this.authToken || !this.userName) {
         chrome.runtime.sendMessage({action: "openOptionsPage"});
       } else {
         try {
-          this.connectToChat();
+          this.initializeChatConnection();
         } catch (error) {
           console.error("Failed to connect to chat due to:", error);
         }
@@ -29,31 +29,31 @@ class ChatObserver {
     });
   }
 
-  collectNames(username) {
+  collectUserNames(userName) {
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
-    const blacklist = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"]; 
+    const blacklistedUserNames = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"]; 
   
-    if (username && englishLettersRegex.test(username) && !blacklist.includes(username.toLowerCase())) {
-      if (!this.uniqueNames.includes(username)) {
-        if (this.uniqueNames.length >= 25) {
-          const removedUsername = this.uniqueNames.shift();
-          console.log(`%c${removedUsername}%c replaced by %c${username}`, 'color: red', 'color: black', 'color: green');
+    if (userName && englishLettersRegex.test(userName) && !blacklistedUserNames.includes(userName.toLowerCase())) {
+      if (!this.uniqueUserNames.includes(userName)) {
+        if (this.uniqueUserNames.length >= 25) {
+          const removedUserName = this.uniqueUserNames.shift();
+          console.log(`%c${removedUserName}%c replaced by %c${userName}`, 'color: red', 'color: black', 'color: green');
         } else {
-          console.log(`%c${username} was added`, 'color: green');
+          console.log(`%c${userName} was added`, 'color: green');
         }
-        this.uniqueNames.push(username);
+        this.uniqueUserNames.push(userName);
       }
     }
   }
   
   observeChat() {
     try {
-      this.chatContainer = this.chatContainer || this.getChatContainer();
-      const existingButtonContainer1 = this.chatContainer?.querySelector("div.Layout-sc-1xcs6mc-0.jaMZlX");
-      const existingButtonContainer2 = this.chatContainer?.querySelector("div.Layout-sc-1xcs6mc-0.liBNWc");
+      this.chatContainerElement = this.chatContainerElement || this.getChatContainer();
+      const existingButtonContainer1 = this.chatContainerElement?.querySelector("div.jaMZlX");
+      const existingButtonContainer2 = this.chatContainerElement?.querySelector("div.liBNWc");
   
-      if (this.chatContainer && existingButtonContainer1 && existingButtonContainer2) {
-        this.observer.disconnect();
+      if (this.chatContainerElement && existingButtonContainer1 && existingButtonContainer2) {
+        this.mutationObserver.disconnect();
         const alertButtonContainer = this.createAlertButtonContainer();
         const alertButton = this.createAlertButton();
   
@@ -65,37 +65,37 @@ class ChatObserver {
     }
   }
 
-  connectToChat() {
+  initializeChatConnection() {
     const url = window.location.href;
-    this.channel = new URL(url).pathname.slice(1);
+    this.channelName = new URL(url).pathname.slice(1);
     try {
-      this.collectNames();
+      this.collectUserNames();
     } catch (error) {
       console.error("Failed to collect names due to:", error);
     }
 
-    const client = new tmi.Client({
+    const chatClient = new tmi.Client({
       options: { debug: false },
       identity: {
-        username: this.username,
-        password: this.token,
+        username: this.userName,
+        password: this.authToken,
       },
-      channels: [this.channel],
+      channels: [this.channelName],
     });
 
-    client.connect().catch(error => {
+    chatClient.connect().catch(error => {
       console.error("Failed to connect to the chat:", error);
       // Try to reconnect
       try {
-        client.connect();
+        chatClient.connect();
       } catch (reconnectError) {
         console.error("Failed to reconnect to the chat:", reconnectError);
       }
     });
 
-    client.on('message', (channel, userstate, message, self) => {
+    chatClient.on('message', (channel, userstate, message, self) => {
       try {
-        this.collectNames(userstate.username);
+        this.collectUserNames(userstate.username);
       } catch (error) {
         console.error("Failed to collect names from message due to:", error);
       }
@@ -107,65 +107,65 @@ class ChatObserver {
   }
 
   createAlertButtonContainer() {
-    const buttonContainer = document.createElement("div");
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.justifyContent = "center";
-    return buttonContainer;
+    const buttonContainerElement = document.createElement("div");
+    buttonContainerElement.style.display = "flex";
+    buttonContainerElement.style.justifyContent = "center";
+    return buttonContainerElement;
   }
 
   createAlertButton() {
-    const alertButton = document.createElement("span");
-    const countText = document.createElement("span");
-    const bellIcon = document.createElement("span");
+    const alertButtonElement = document.createElement("span");
+    const countTextElement = document.createElement("span");
+    const bellIconElement = document.createElement("span");
   
-    countText.style.fontSize = "small";
-    bellIcon.style.fontSize = "large";
-    bellIcon.style.cursor = "pointer";
+    countTextElement.style.fontSize = "small";
+    bellIconElement.style.fontSize = "large";
+    bellIconElement.style.cursor = "pointer";
   
-    alertButton.appendChild(countText);
-    alertButton.appendChild(bellIcon);
+    alertButtonElement.appendChild(countTextElement);
+    alertButtonElement.appendChild(bellIconElement);
   
-    bellIcon.addEventListener("click", () => this.sendAlert());
-    bellIcon.addEventListener("mouseover", () => this.previewAlert(bellIcon));
+    bellIconElement.addEventListener("click", () => this.sendAlert());
+    bellIconElement.addEventListener("mouseover", () => this.previewAlert(bellIconElement));
   
     setInterval(() => {
-      const collectedNamesCount = this.uniqueNames.size;
-      countText.textContent = `${this.uniqueNames.length}x`;
-      bellIcon.textContent = "🔔";
+      const collectedNamesCount = this.uniqueUserNames.size;
+      countTextElement.textContent = `${this.uniqueUserNames.length}x`;
+      bellIconElement.textContent = "🔔";
     }, 1000);
   
-    return alertButton;
+    return alertButtonElement;
   }
 
   sendAlert() {
     try {
-      const collectedNames = Array.from(this.uniqueNames).join(" ");
+      const collectedNames = Array.from(this.uniqueUserNames).join(" ");
       console.log(collectedNames);
   
       const url = window.location.href;
       const channelName = new URL(url).pathname.slice(1);
   
-      const client = new tmi.Client({
+      const chatClient = new tmi.Client({
         options: { debug: false },
         identity: {
-          username: this.username,
-          password: this.token,
+          username: this.userName,
+          password: this.authToken,
         },
         channels: [channelName],
       });
   
-      client.connect().catch(error => {
+      chatClient.connect().catch(error => {
         console.error("Failed to connect to the chat:", error);
         // Try to reconnect
         try {
-          client.connect();
+          chatClient.connect();
         } catch (reconnectError) {
           console.error("Failed to reconnect to the chat:", reconnectError);
         }
       });
   
-      client.on("connected", () => {
-        client.say(channelName, `${collectedNames} \n\nSOYSCREAM ALERT`).catch(error => {
+      chatClient.on("connected", () => {
+        chatClient.say(channelName, `${collectedNames} \n\nSOYSCREAM ALERT`).catch(error => {
           console.error("Failed to send message:", error);
         });
       });
@@ -174,8 +174,8 @@ class ChatObserver {
     }
   }
 
-  previewAlert(alertButton) {
-    const previewMessage = Array.from(this.uniqueNames).join(" ");
+  previewAlert(alertButtonElement) {
+    const previewMessage = Array.from(this.uniqueUserNames).join(" ");
     console.log(`Preview: ${previewMessage}`);
   }
 
