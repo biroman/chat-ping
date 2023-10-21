@@ -25,8 +25,8 @@
 
 ## Customization
 
-- If you wish to adjust the maximum number of stored names, you'll need to edit the `LAST_NAMES_LIMIT` variable within the `content.js` file.
-- If you want to modify the emotes used in the ping, you'll need to edit the `collectLastNames()` function within the `content.js` file.
+- If you wish to adjust the maximum number of stored names, you'll need to edit the `collectNames()` function within the `content.js` file.
+- If you want to modify the emotes used in the ping, you'll need to edit the `sendAlert()` function within the `content.js` file.
 - To expand the blacklist with additional names, you can add the names to the `blacklist` array in the `content.js` file.
 
 ## Known bugs
