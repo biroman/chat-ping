@@ -9,7 +9,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.twitch.tv/*"],
+      "matches": ["https://www.twitch.tv/xqc"],
       "js": ["content.js", "tmi.js"]
     }
   ]
