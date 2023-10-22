@@ -8,7 +8,9 @@ class ChatObserver {
     this.authToken = null;
     this.userName = null;
     this.channelName = null;
-    this.uniqueUserNames = [];
+    this.uniqueUserNames1 = [];
+    this.uniqueUserNames2 = [];
+    this.currentArray = this.uniqueUserNames1;
     this.verifyAuthTokenAndUserName();
   }
 
@@ -33,14 +35,20 @@ class ChatObserver {
     const blacklistedUserNames = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"]; 
   
     if (userName && englishLettersRegex.test(userName) && !blacklistedUserNames.includes(userName.toLowerCase())) {
-      if (!this.uniqueUserNames.includes(userName)) {
-        if (this.uniqueUserNames.length >= 25) {
-          const removedUserName = this.uniqueUserNames.shift();
-          console.log(`%c${removedUserName}%c replaced by %c${userName}`, 'color: red', 'color: black', 'color: green');
+      if (!this.uniqueUserNames1.includes(userName) && !this.uniqueUserNames2.includes(userName)) {
+        if (this.currentArray.length >= 25) {
+          const removedUserName = this.currentArray.shift();
+          const arrayName = this.currentArray === this.uniqueUserNames1 ? 'uniqueUserNames1' : 'uniqueUserNames2';
+          console.log(`%c${removedUserName} in ${arrayName} replaced by %c${userName}`, 'color: red', 'color: green');
         } else {
           console.log(`%c${userName} was added`, 'color: green');
         }
-        this.uniqueUserNames.push(userName);
+        this.currentArray.push(userName);
+        if (this.currentArray === this.uniqueUserNames1 && this.uniqueUserNames1.length >= 25) {
+          this.currentArray = this.uniqueUserNames2;
+        } else if (this.currentArray === this.uniqueUserNames2 && this.uniqueUserNames2.length >= 25) {
+          this.currentArray = this.uniqueUserNames1;
+        }
       }
     }
   }
@@ -126,21 +134,22 @@ class ChatObserver {
     alertButtonElement.appendChild(bellIconElement);
   
     bellIconElement.addEventListener("click", () => this.sendAlert());
-    bellIconElement.addEventListener("mouseover", () => this.previewAlert(bellIconElement));
+    // bellIconElement.addEventListener("mouseover", () => this.previewAlert(bellIconElement));
   
     setInterval(() => {
-      const collectedNamesCount = this.uniqueUserNames.size;
-      countTextElement.textContent = `${this.uniqueUserNames.length}x`;
+      const collectedNamesCount = this.uniqueUserNames1.length + this.uniqueUserNames2.length;
+      countTextElement.textContent = `${collectedNamesCount}x`;
       bellIconElement.textContent = "🔔";
     }, 1000);
-  
     return alertButtonElement;
   }
 
   sendAlert() {
     try {
-      const collectedNames = Array.from(this.uniqueUserNames).join(" ");
-      console.log(collectedNames);
+      const collectedNames1 = Array.from(this.uniqueUserNames1).join(" ");
+      const collectedNames2 = Array.from(this.uniqueUserNames2).join(" ");
+      console.log(collectedNames1);
+      console.log(collectedNames2);
   
       const url = window.location.href;
       const channelName = new URL(url).pathname.slice(1);
@@ -165,19 +174,26 @@ class ChatObserver {
       });
   
       chatClient.on("connected", () => {
-        chatClient.say(channelName, `${collectedNames} \n\nSOYSCREAM ALERT`).catch(error => {
+        chatClient.say(channelName, `${collectedNames1} \n\nSOYSCREAM ALERT`).catch(error => {
           console.error("Failed to send message:", error);
         });
+        if (this.uniqueUserNames2.length >= 25) {
+          setTimeout(() => {
+            chatClient.say(channelName, `${collectedNames2} \n\nSOYSCREAM ALERT`).catch(error => {
+              console.error("Failed to send message:", error);
+            });
+          }, 1500);
+        }
       });
     } catch (error) {
       console.error("An error occurred in sendAlert:", error);
     }
   }
 
-  previewAlert(alertButtonElement) {
-    const previewMessage = Array.from(this.uniqueUserNames).join(" ");
-    console.log(`Preview: ${previewMessage}`);
-  }
+  // previewAlert(alertButtonElement) {
+  //   const previewMessage = Array.from(this.uniqueUserNames).join(" ");
+  //   console.log(`Preview: ${previewMessage}`);
+  // }
 
 }
 window.addEventListener('load', (event) => {
