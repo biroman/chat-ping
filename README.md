@@ -19,9 +19,9 @@
 
 ## Usage
 
-- The application maintains a list of up to 20 names from the chat. You can see the number of stored names below your chat, indicated as '20x🔔'.
-- Clicking the bell icon sends a ping message in the chat.
-- When the list of names gets full, the system replaces old stored names with new ones.
+- The application maintains a list of up to 50 names from the chat. You can see the number of stored names below your chat, indicated as for example '41x🔔'.
+- Clicking the bell icon sends a ping message in the chat. But if you wait untill it hits 50x, it will send two seperate messages with 50 unique names.
+- When the list of names gets full, the system replaces old stored names with new ones so both messages will contain up to date names of active chatters.
 
 ## Customization
 
@@ -29,10 +29,9 @@
 - If you want to modify the emotes used in the ping, you'll need to edit the `sendAlert()` function within the `content.js` file.
 - To expand the blacklist with additional names, you can add the names to the `blacklist` array in the `content.js` file.
 
-## Known bugs
+## Known bug
 
-- If your chrome tab is inactive for a while, the ping button might stop working. Refresh the page to fix.
-- Sometimes when you enter the chat, the ping button might not show up. Refresh to page to fix.
+- If you get timed out, you need to refresh page to make the button re-appear.
 
 ## Support
 
