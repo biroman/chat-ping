@@ -39,9 +39,9 @@ class ChatObserver {
         if (this.currentArray.length >= 25) {
           const removedUserName = this.currentArray.shift();
           const arrayName = this.currentArray === this.uniqueUserNames1 ? 'uniqueUserNames1' : 'uniqueUserNames2';
-          console.log(`%c${removedUserName} in ${arrayName} replaced by %c${userName}`, 'color: red', 'color: green');
+          console.log(`%c${userName} %creplaced %c${removedUserName} %cin ${arrayName}`, 'color: green', 'color: gray', 'color: red', 'color: gray');
         } else {
-          console.log(`%c${userName} was added`, 'color: green');
+          console.log(`%c${userName}%c was added`, 'color: green', 'color: gray');
         }
         this.currentArray.push(userName);
         if (this.currentArray === this.uniqueUserNames1 && this.uniqueUserNames1.length >= 25) {
@@ -58,13 +58,14 @@ class ChatObserver {
       this.chatContainerElement = this.chatContainerElement || this.getChatContainer();
       const existingButtonContainer1 = this.chatContainerElement?.querySelector("div.jaMZlX");
       const existingButtonContainer2 = this.chatContainerElement?.querySelector("div.liBNWc");
+      const existingAlertButton = this.chatContainerElement?.querySelector(".alert-button");
   
-      if (this.chatContainerElement && existingButtonContainer1 && existingButtonContainer2) {
-        this.mutationObserver.disconnect();
+      if (this.chatContainerElement && existingButtonContainer1 && existingButtonContainer2 && !existingAlertButton) {
         const alertButtonContainer = this.createAlertButtonContainer();
         const alertButton = this.createAlertButton();
   
         alertButtonContainer.appendChild(alertButton);
+        alertButtonContainer.classList.add('alert-button'); // Add a class to the alert button container
         existingButtonContainer1.insertAdjacentElement("afterend", alertButtonContainer);
       }
     } catch (error) {
