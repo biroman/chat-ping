@@ -20,8 +20,12 @@
 ## Usage
 
 - The application maintains a list of up to 50 names from the chat. You can see the number of stored names below your chat, indicated as for example '41x🔔'.
-- Clicking the bell icon sends a ping message in the chat. But if you wait untill it hits 50x, it will send two seperate messages with 50 unique names.
+- Clicking the bell icon sends a ping message in the chat. But if you wait until it hits 50x, it will send two separate messages with 50 unique names.
 - When the list of names gets full, the system replaces old stored names with new ones so both messages will contain up to date names of active chatters.
+
+## ⚠️ Warning
+
+**Please be aware that using this application may result in a temporary chat timeout. This is because some usernames may be flagged as inappropriate or profane by Fossabot. So if you know or figue out names that will get you timed out, add them to the blacklist**
 
 ## Customization
 
@@ -29,9 +33,9 @@
 - If you want to modify the emotes used in the ping, you'll need to edit the `sendAlert()` function within the `content.js` file.
 - To expand the blacklist with additional names, you can add the names to the `blacklist` array in the `content.js` file.
 
-## Known bug
+## Known bugs
 
-- If you get timed out, you need to refresh page to make the button re-appear.
+- N/A
 
 ## Support
 
