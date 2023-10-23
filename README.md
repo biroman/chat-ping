@@ -25,7 +25,7 @@
 
 ## ⚠️ Warning
 
-**Please be aware that using this application may result in a temporary chat timeout. This is because some usernames may be flagged as inappropriate or profane by Fossabot. So if you know or figue out names that will get you timed out, add them to the blacklist**
+**Please be aware that pinging random names may result in a temporary chat timeout. This is because some usernames may be flagged as inappropriate or profane by Fossabot. So if you know or figue out names that will get you timed out, add them to the blacklist**
 
 ## Customization
 
