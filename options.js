@@ -1,3 +1,5 @@
+const permanentBlacklist = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"];
+
 window.onload = function() {
   chrome.storage.sync.get(['token', 'username'], function(data) {
     if (data.token && data.username) {
@@ -6,9 +8,64 @@ window.onload = function() {
       document.getElementById('token').disabled = true;
       document.getElementById('username').disabled = true;
       document.getElementById('tokenForm').querySelector('input[type="submit"]').disabled = true;
+      if (data.blacklist) {
+        document.getElementById('blacklist').value = data.blacklist.join(',');
+      }
+      updateBlacklistDisplay();
     }
   });
 };
+
+document.getElementById('blacklistForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const username = document.getElementById('blacklist').value.toLowerCase();
+  chrome.storage.sync.get(['blacklist'], function(data) {
+    let blacklist = data.blacklist || [];
+    blacklist = blacklist.map(name => name.toLowerCase());
+    if (username && !blacklist.includes(username) && !permanentBlacklist.includes(username)) {
+      blacklist.push(username);
+      chrome.storage.sync.set({blacklist: blacklist}, function() {
+        document.getElementById('blacklist').value = '';
+        updateBlacklistDisplay(); // Call this only when a new username is added
+      });
+    } else {
+      showNotification('Oops!', 'This name is already blacklisted', '#eeeeee', '#656565');
+    }
+  });
+});
+
+chrome.storage.sync.get(null, function(items) {
+  console.log(items);
+});
+
+function updateBlacklistDisplay() {
+  chrome.storage.sync.get(['blacklist'], function(data) {
+    const blacklistDisplay = document.getElementById('blacklistDisplay');
+    blacklistDisplay.innerHTML = '';
+    const blacklist = data.blacklist || [];
+    blacklist.forEach(function(username) {
+      if (!permanentBlacklist.includes(username)) {
+        const usernameDiv = document.createElement('div');
+        usernameDiv.textContent = username;
+        const removeButton = document.createElement('span');
+        removeButton.textContent = 'x';
+        removeButton.classList.add('removeButton');
+        removeButton.addEventListener('click', function() {
+          chrome.storage.sync.get(['blacklist'], function(data) {
+            const blacklist = data.blacklist || [];
+            const index = blacklist.indexOf(username);
+            if (index > -1) {
+              blacklist.splice(index, 1);
+              chrome.storage.sync.set({blacklist: blacklist}, updateBlacklistDisplay);
+            }
+          });
+        });
+        usernameDiv.appendChild(removeButton);
+        blacklistDisplay.appendChild(usernameDiv);
+      }
+    });
+  });
+}
 
 document.getElementById('oauthButton').addEventListener('click', function() {
   // Get the current tab

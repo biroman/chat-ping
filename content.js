@@ -2,6 +2,8 @@ const CHAT_CONTAINER_SELECTOR = ".seventv-chat-input-container";
 
 class ChatObserver {
   constructor() {
+    const blacklistedUserNames = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"];
+    chrome.storage.sync.set({blacklist: blacklistedUserNames});
     this.mutationObserver = new MutationObserver(() => this.observeChat());
     this.mutationObserver.observe(document.body, { childList: true, subtree: true });
     this.chatContainerElement = null;
@@ -32,9 +34,10 @@ class ChatObserver {
 
   collectUserNames(userName) {
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
-    const blacklistedUserNames = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"]; 
   
-    if (userName && englishLettersRegex.test(userName) && !blacklistedUserNames.includes(userName.toLowerCase())) {
+    chrome.storage.sync.get(['blacklist'], (data) => {
+      const blacklistedUserNames = data.blacklist || [];
+      if (userName && englishLettersRegex.test(userName) && !blacklistedUserNames.includes(userName.toLowerCase())) {
       if (!this.uniqueUserNames1.includes(userName) && !this.uniqueUserNames2.includes(userName)) {
         if (this.currentArray.length >= 25) {
           const removedUserName = this.currentArray.shift();
@@ -50,7 +53,7 @@ class ChatObserver {
           this.currentArray = this.uniqueUserNames1;
         }
       }
-    }
+    }});
   }
   
   observeChat() {
