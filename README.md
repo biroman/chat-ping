@@ -25,7 +25,7 @@
 
 ## ⚠️ Warning
 
-**Please be aware that pinging random names may result in a temporary chat timeout. This is because some usernames may be flagged as inappropriate or profane by Fossabot. So if you know or figue out names that will get you timed out, add them to the blacklist**
+**Please note that indiscriminately pinging random usernames could lead to a temporary chat timeout. This can occur if Fossabot flags certain usernames as inappropriate or profane. To avoid this, if you identify or encounter usernames that result in a timeout, please manually add them to your blacklist.**
 
 ## Customization
 
