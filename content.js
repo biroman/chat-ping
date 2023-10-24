@@ -40,28 +40,31 @@ class ChatObserver {
       if (userName && englishLettersRegex.test(userName) && !blacklistedUserNames.includes(userName.toLowerCase())) {
         const indexInArray1 = this.uniqueUserNames1.indexOf(userName);
         const indexInArray2 = this.uniqueUserNames2.indexOf(userName);
-        let userUpdated = false;
+  
         if (indexInArray1 !== -1) {
           this.uniqueUserNames1.splice(indexInArray1, 1);
-          userUpdated = true;
+          console.log(`%c${userName}%c refreshed their position in uniqueUserNames1`, "color: orange", "color: gray");
+          this.uniqueUserNames1.push(userName);
         } else if (indexInArray2 !== -1) {
           this.uniqueUserNames2.splice(indexInArray2, 1);
-          userUpdated = true;
-        }
-        if (this.currentArray.length >= 25) {
-          const removedUserName = this.currentArray.shift();
-          const arrayName = this.currentArray === this.uniqueUserNames1 ? "uniqueUserNames1" : "uniqueUserNames2";
-          console.log(`%c${userName} %creplaced %c${removedUserName} %cin ${arrayName}`, "color: green", "color: gray", "color: red", "color: gray");
-        } else if (userUpdated) {
-          console.log(`%c${userName}%c refreshed their position`, "color: green", "color: gray");
+          console.log(`%c${userName}%c refreshed their position in uniqueUserNames2`, "color: orange", "color: gray");
+          this.uniqueUserNames2.push(userName);
         } else {
-          console.log(`%c${userName}%c was added`, "color: green", "color: gray");
-        }
-        this.currentArray.push(userName);
-        if (this.currentArray === this.uniqueUserNames1 && this.uniqueUserNames1.length >= 25) {
-          this.currentArray = this.uniqueUserNames2;
-        } else if (this.currentArray === this.uniqueUserNames2 && this.uniqueUserNames2.length >= 25) {
-          this.currentArray = this.uniqueUserNames1;
+          if (this.currentArray === this.uniqueUserNames1 && this.uniqueUserNames1.length >= 25) {
+            this.currentArray = this.uniqueUserNames2;
+          } else if (this.currentArray === this.uniqueUserNames2 && this.uniqueUserNames2.length >= 25) {
+            this.currentArray = this.uniqueUserNames1;
+          }
+  
+          if (this.currentArray.length >= 25) {
+            const removedUserName = this.currentArray.shift();
+            const arrayName = this.currentArray === this.uniqueUserNames1 ? "uniqueUserNames1" : "uniqueUserNames2";
+            console.log(`%c${userName} %creplaced %c${removedUserName} %cin ${arrayName}`, "color: green", "color: gray", "color: red", "color: gray");
+          } else {
+            console.log(`%c${userName}%c was added`, "color: green", "color: gray");
+          }
+  
+          this.currentArray.push(userName);
         }
       }
     });
@@ -148,7 +151,7 @@ class ChatObserver {
     alertButtonElement.appendChild(bellIconElement);
 
     bellIconElement.addEventListener("click", () => this.sendAlert());
-    // bellIconElement.addEventListener("mouseover", () => this.previewAlert(bellIconElement));
+    bellIconElement.addEventListener("mouseover", () => this.previewAlert());
 
     setInterval(() => {
       const collectedNamesCount = this.uniqueUserNames1.length + this.uniqueUserNames2.length;
@@ -162,8 +165,6 @@ class ChatObserver {
     try {
       const collectedNames1 = Array.from(this.uniqueUserNames1).join(" ");
       const collectedNames2 = Array.from(this.uniqueUserNames2).join(" ");
-      console.log(collectedNames1);
-      console.log(collectedNames2);
   
       this.chatClient.say(this.channelName, `${collectedNames1} \n\nSOYSCREAM ALERT`).catch((error) => {
         console.error("Failed to send message:", error);
@@ -174,16 +175,20 @@ class ChatObserver {
             console.error("Failed to send message:", error);
           });
         }, 1500);
+      } else {
+        console.log("uniqueUserNames2 was not sent because it does not have at least 25 elements.");
       }
     } catch (error) {
       console.error("An error occurred in sendAlert:", error);
     }
   }
 
-  // previewAlert(alertButtonElement) {
-  //   const previewMessage = Array.from(this.uniqueUserNames).join(" ");
-  //   console.log(`Preview: ${previewMessage}`);
-  // }
+  previewAlert() {
+    const previewMessage1 = Array.from(this.uniqueUserNames1).join(" ");
+    const previewMessage2 = Array.from(this.uniqueUserNames2).join(" ");
+    console.log(`Preview1: ${previewMessage1}`);
+    console.log(`Preview2: ${previewMessage2}`);
+  }
 }
 window.addEventListener("load", (event) => {
   new ChatObserver();
