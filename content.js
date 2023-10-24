@@ -86,7 +86,7 @@ class ChatObserver {
       console.error("Failed to collect names due to:", error);
     }
 
-    const chatClient = new tmi.Client({
+    this.chatClient = new tmi.Client({
       options: { debug: false },
       identity: {
         username: this.userName,
@@ -95,17 +95,17 @@ class ChatObserver {
       channels: [this.channelName],
     });
 
-    chatClient.connect().catch((error) => {
+    this.chatClient.connect().catch((error) => {
       console.error("Failed to connect to the chat:", error);
       // Try to reconnect
       try {
-        chatClient.connect();
+        this.chatClient.connect();
       } catch (reconnectError) {
         console.error("Failed to reconnect to the chat:", reconnectError);
       }
     });
 
-    chatClient.on("message", (channel, userstate, message, self) => {
+    this.chatClient.on("message", (channel, userstate, message, self) => {
       try {
         this.collectUserNames(userstate.username);
       } catch (error) {
@@ -154,41 +154,17 @@ class ChatObserver {
       const collectedNames2 = Array.from(this.uniqueUserNames2).join(" ");
       console.log(collectedNames1);
       console.log(collectedNames2);
-
-      const url = window.location.href;
-      const channelName = new URL(url).pathname.slice(1);
-
-      const chatClient = new tmi.Client({
-        options: { debug: false },
-        identity: {
-          username: this.userName,
-          password: this.authToken,
-        },
-        channels: [channelName],
+  
+      this.chatClient.say(this.channelName, `${collectedNames1} \n\nSOYSCREAM ALERT`).catch((error) => {
+        console.error("Failed to send message:", error);
       });
-
-      chatClient.connect().catch((error) => {
-        console.error("Failed to connect to the chat:", error);
-        // Try to reconnect
-        try {
-          chatClient.connect();
-        } catch (reconnectError) {
-          console.error("Failed to reconnect to the chat:", reconnectError);
-        }
-      });
-
-      chatClient.on("connected", () => {
-        chatClient.say(channelName, `${collectedNames1} \n\nSOYSCREAM ALERT`).catch((error) => {
-          console.error("Failed to send message:", error);
-        });
-        if (this.uniqueUserNames2.length >= 25) {
-          setTimeout(() => {
-            chatClient.say(channelName, `${collectedNames2} \n\nSOYSCREAM ALERT`).catch((error) => {
-              console.error("Failed to send message:", error);
-            });
-          }, 1500);
-        }
-      });
+      if (this.uniqueUserNames2.length >= 25) {
+        setTimeout(() => {
+          this.chatClient.say(this.channelName, `${collectedNames2} \n\nSOYSCREAM ALERT`).catch((error) => {
+            console.error("Failed to send message:", error);
+          });
+        }, 1500);
+      }
     } catch (error) {
       console.error("An error occurred in sendAlert:", error);
     }
