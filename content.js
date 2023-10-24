@@ -34,24 +34,34 @@ class ChatObserver {
 
   collectUserNames(userName) {
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
-
+  
     chrome.storage.sync.get(["blacklist"], (data) => {
       const blacklistedUserNames = data.blacklist || [];
       if (userName && englishLettersRegex.test(userName) && !blacklistedUserNames.includes(userName.toLowerCase())) {
-        if (!this.uniqueUserNames1.includes(userName) && !this.uniqueUserNames2.includes(userName)) {
-          if (this.currentArray.length >= 25) {
-            const removedUserName = this.currentArray.shift();
-            const arrayName = this.currentArray === this.uniqueUserNames1 ? "uniqueUserNames1" : "uniqueUserNames2";
-            console.log(`%c${userName} %creplaced %c${removedUserName} %cin ${arrayName}`, "color: green", "color: gray", "color: red", "color: gray");
-          } else {
-            console.log(`%c${userName}%c was added`, "color: green", "color: gray");
-          }
-          this.currentArray.push(userName);
-          if (this.currentArray === this.uniqueUserNames1 && this.uniqueUserNames1.length >= 25) {
-            this.currentArray = this.uniqueUserNames2;
-          } else if (this.currentArray === this.uniqueUserNames2 && this.uniqueUserNames2.length >= 25) {
-            this.currentArray = this.uniqueUserNames1;
-          }
+        const indexInArray1 = this.uniqueUserNames1.indexOf(userName);
+        const indexInArray2 = this.uniqueUserNames2.indexOf(userName);
+        let userUpdated = false;
+        if (indexInArray1 !== -1) {
+          this.uniqueUserNames1.splice(indexInArray1, 1);
+          userUpdated = true;
+        } else if (indexInArray2 !== -1) {
+          this.uniqueUserNames2.splice(indexInArray2, 1);
+          userUpdated = true;
+        }
+        if (this.currentArray.length >= 25) {
+          const removedUserName = this.currentArray.shift();
+          const arrayName = this.currentArray === this.uniqueUserNames1 ? "uniqueUserNames1" : "uniqueUserNames2";
+          console.log(`%c${userName} %creplaced %c${removedUserName} %cin ${arrayName}`, "color: green", "color: gray", "color: red", "color: gray");
+        } else if (userUpdated) {
+          console.log(`%c${userName}%c refreshed their position`, "color: green", "color: gray");
+        } else {
+          console.log(`%c${userName}%c was added`, "color: green", "color: gray");
+        }
+        this.currentArray.push(userName);
+        if (this.currentArray === this.uniqueUserNames1 && this.uniqueUserNames1.length >= 25) {
+          this.currentArray = this.uniqueUserNames2;
+        } else if (this.currentArray === this.uniqueUserNames2 && this.uniqueUserNames2.length >= 25) {
+          this.currentArray = this.uniqueUserNames1;
         }
       }
     });
