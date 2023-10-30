@@ -2,7 +2,60 @@ const CHAT_CONTAINER_SELECTOR = ".seventv-chat-input-container";
 
 class ChatObserver {
   constructor() {
-    const blacklistedUserNames = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"];
+    const blacklistedUserNames = [
+      "schnozebot",
+      "fossabot",
+      "biroman",
+      "xqc",
+      "thepositivebot",
+      "darkface____",
+      "a_seagull",
+      "aiden",
+      "aimbotcalvin",
+      "antvenom",
+      "ben",
+      "crtvly",
+      "eff2ct",
+      "evomanny",
+      "hnlbot",
+      "hydration",
+      "infinitea",
+      "jayne",
+      "jessesmfi",
+      "kaanvict",
+      "legoenthusiast",
+      "logviewer",
+      "m0xyy",
+      "mendo",
+      "mightyoaks",
+      "moobot",
+      "netcat",
+      "nightbot",
+      "novakr",
+      "numbratv",
+      "nvez",
+      "ohbot",
+      "pajlada",
+      "pokelawls",
+      "reckful",
+      "shadder2k",
+      "sinatraa",
+      "sodapoppin",
+      "spanova",
+      "streamelements",
+      "supertf",
+      "surefour",
+      "thisapear",
+      "thonkbot",
+      "timthetatman",
+      "topkej",
+      "trainwreckstv",
+      "xqcbot",
+      "zostradamus",
+      "zullxv",
+      "zza_ow",
+    ];
+
     chrome.storage.sync.set({ blacklist: blacklistedUserNames });
     this.mutationObserver = new MutationObserver(() => this.observeChat());
     this.mutationObserver.observe(document.body, { childList: true, subtree: true });
@@ -34,13 +87,13 @@ class ChatObserver {
 
   collectUserNames(userName) {
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
-  
+
     chrome.storage.sync.get(["blacklist"], (data) => {
       const blacklistedUserNames = data.blacklist || [];
       if (userName && englishLettersRegex.test(userName) && !blacklistedUserNames.includes(userName.toLowerCase())) {
         const indexInArray1 = this.uniqueUserNames1.indexOf(userName);
         const indexInArray2 = this.uniqueUserNames2.indexOf(userName);
-  
+
         if (indexInArray1 !== -1) {
           this.uniqueUserNames1.splice(indexInArray1, 1);
           console.log(`%c${userName}%c refreshed their position in uniqueUserNames1`, "color: orange", "color: gray");
@@ -55,7 +108,7 @@ class ChatObserver {
           } else if (this.currentArray === this.uniqueUserNames2 && this.uniqueUserNames2.length >= 25) {
             this.currentArray = this.uniqueUserNames1;
           }
-  
+
           if (this.currentArray.length >= 25) {
             const removedUserName = this.currentArray.shift();
             const arrayName = this.currentArray === this.uniqueUserNames1 ? "uniqueUserNames1" : "uniqueUserNames2";
@@ -63,7 +116,7 @@ class ChatObserver {
           } else {
             console.log(`%c${userName}%c was added`, "color: green", "color: gray");
           }
-  
+
           this.currentArray.push(userName);
         }
       }
@@ -110,7 +163,6 @@ class ChatObserver {
 
     this.chatClient.connect().catch((error) => {
       console.error("Failed to connect to the chat:", error);
-      // Try to reconnect
       try {
         this.chatClient.connect();
       } catch (reconnectError) {
@@ -165,7 +217,7 @@ class ChatObserver {
     try {
       const collectedNames1 = Array.from(this.uniqueUserNames1).join(" ");
       const collectedNames2 = Array.from(this.uniqueUserNames2).join(" ");
-  
+
       this.chatClient.say(this.channelName, `${collectedNames1} \n\nSOYSCREAM ALERT`).catch((error) => {
         console.error("Failed to send message:", error);
       });
