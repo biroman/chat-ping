@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Chat ping",
+  "version": "1.0",
+  "permissions": ["activeTab", "storage", "tabs"],
+  "options_page": "options.html",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.twitch.tv/xqc"],
+      "js": ["content.js", "tmi.js"]
+    }
+  ]
+}

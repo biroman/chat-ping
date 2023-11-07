@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Ding Dong!</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+  </head>
+  <body>
+    <div class="container">
+      <p class="emoji">🔔Setup</p>
+      <h2>Step 1</h2>
+      <p>Generate OAuth token from your twitch, so we are able to send the ping.</p>
+      <div class="flex-container">
+        <button id="oauthButton" >Generate token</button>
+        <p>Do it manually: <a href="https://twitchapps.com/tmi/" target="_blank">Twitchapps.com</a></p>
+        
+      </div>
+      <br>
+      <h2>Step 2</h2>
+      <p>Insert your Twitch username and the OAuth token you generated in step 1 and click save.</p>
+      <br>
+      <form id="tokenForm">
+        <label for="username">Twitch username</label>
+        <input type="text" id="username" name="username">
+        <label for="token">OAuth token</label>
+        <input type="text" id="token" name="token">
+        <div class="btnContainer">
+          <input type="submit" value="Save">
+          <button id="deleteButton" type="button">Discard</button>
+        </div>
+      </form>
+      <br>
+      <div id="stepThree">
+        <h2>Step 3</h2>
+        <div style="position: relative; display: flex; align-items: center;">
+          <img src="https://static-cdn.jtvnw.net/badges/v1/cfc78670-1b59-42d4-970a-305962e445dd/1" alt="rank">
+          <p id="biroman">Biroman<p style="margin-right: 5px; font-weight: bold;">:</p></p>
+          <p id="usernameDisplay"></p>
+          <div style="position: relative;">
+            <img src="https://cdn.7tv.app/emote/64114d39f99ff93d22604f3f/1x.webp" alt="soyscream">
+            <img src="https://cdn.7tv.app/emote/6216d2f73808dfe5c465bc4a/1x.webp" alt="alert" style="position: absolute; left: 0; top: 0;">
+          </div>
+        </div>
+      </div>
+      <form id="blacklistForm">
+        <h1>
+          Custom blacklist
+        </h1>
+        <p>Add any usernames you wish to exclude from receiving the ping.</p>
+        <input type="text" id="blacklist" name="blacklist" placeholder="Username">
+      </form>
+      <div id="blacklistDisplay" class="blacklistContainer">
+      </div>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>
