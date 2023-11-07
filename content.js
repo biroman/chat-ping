@@ -1,4 +1,5 @@
 const CHAT_CONTAINER_SELECTOR = ".seventv-chat-input-container";
+const MAX_USERS = 20;
 
 class ChatObserver {
   constructor() {
@@ -87,6 +88,11 @@ class ChatObserver {
 
   collectUserNames(userName) {
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
+    const forbiddenWords = ["trans"]; //Preventing timeouts
+
+    if (forbiddenWords.some((word) => userName.toLowerCase().includes(word))) {
+      return;
+    }
 
     chrome.storage.sync.get(["blacklist"], (data) => {
       const blacklistedUserNames = data.blacklist || [];
@@ -103,13 +109,13 @@ class ChatObserver {
           console.log(`%c${userName}%c refreshed their position in uniqueUserNames2`, "color: orange", "color: gray");
           this.uniqueUserNames2.push(userName);
         } else {
-          if (this.currentArray === this.uniqueUserNames1 && this.uniqueUserNames1.length >= 25) {
+          if (this.currentArray === this.uniqueUserNames1 && this.uniqueUserNames1.length >= MAX_USERS) {
             this.currentArray = this.uniqueUserNames2;
-          } else if (this.currentArray === this.uniqueUserNames2 && this.uniqueUserNames2.length >= 25) {
+          } else if (this.currentArray === this.uniqueUserNames2 && this.uniqueUserNames2.length >= MAX_USERS) {
             this.currentArray = this.uniqueUserNames1;
           }
 
-          if (this.currentArray.length >= 25) {
+          if (this.currentArray.length >= MAX_USERS) {
             const removedUserName = this.currentArray.shift();
             const arrayName = this.currentArray === this.uniqueUserNames1 ? "uniqueUserNames1" : "uniqueUserNames2";
             console.log(`%c${userName} %creplaced %c${removedUserName} %cin ${arrayName}`, "color: green", "color: gray", "color: red", "color: gray");
@@ -135,7 +141,7 @@ class ChatObserver {
         const alertButton = this.createAlertButton();
 
         alertButtonContainer.appendChild(alertButton);
-        alertButtonContainer.classList.add("alert-button"); // Add a class to the alert button container
+        alertButtonContainer.classList.add("alert-button");
         existingButtonContainer1.insertAdjacentElement("afterend", alertButtonContainer);
       }
     } catch (error) {
@@ -146,11 +152,6 @@ class ChatObserver {
   initializeChatConnection() {
     const url = window.location.href;
     this.channelName = new URL(url).pathname.slice(1);
-    try {
-      this.collectUserNames();
-    } catch (error) {
-      console.error("Failed to collect names due to:", error);
-    }
 
     this.chatClient = new tmi.Client({
       options: { debug: false },
@@ -221,14 +222,14 @@ class ChatObserver {
       this.chatClient.say(this.channelName, `${collectedNames1} \n\nSOYSCREAM ALERT`).catch((error) => {
         console.error("Failed to send message:", error);
       });
-      if (this.uniqueUserNames2.length >= 25) {
+      if (this.uniqueUserNames2.length >= MAX_USERS) {
         setTimeout(() => {
           this.chatClient.say(this.channelName, `${collectedNames2} \n\nSOYSCREAM ALERT`).catch((error) => {
             console.error("Failed to send message:", error);
           });
         }, 1500);
       } else {
-        console.log("uniqueUserNames2 was not sent because it does not have at least 25 elements.");
+        console.log(`uniqueUserNames2 was not sent because it does not have at least ${MAX_USERS} elements.`);
       }
     } catch (error) {
       console.error("An error occurred in sendAlert:", error);
