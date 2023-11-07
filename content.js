@@ -179,7 +179,6 @@ class ChatObserver {
       }
     });
   }
-
   getChatContainer() {
     return document.querySelector(CHAT_CONTAINER_SELECTOR);
   }
