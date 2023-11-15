@@ -7,3 +7,10 @@ chrome.runtime.onInstalled.addListener(() => {
       }
     });
   });
+
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'accessToken') {
+    handleAccessToken(request.token, request.expiresIn);
+  }
+});

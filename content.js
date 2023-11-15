@@ -68,6 +68,56 @@ class ChatObserver {
     this.uniqueUserNames2 = [];
     this.currentArray = this.uniqueUserNames1;
     this.verifyAuthTokenAndUserName();
+    this.refreshTokenIfNeeded();
+  }
+
+  refreshTokenIfNeeded() {
+    return new Promise((resolve, reject) => {
+      chrome.storage.sync.get(["expiresAt", "refreshToken"], (result) => {
+        const expiresAt = new Date(result.expiresAt);
+        const refreshToken = result.refreshToken;
+        const now = new Date();
+        const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+  
+        if (!expiresAt || !refreshToken) {
+          console.error("Missing expiresAt or refreshToken");
+          reject("Missing expiresAt or refreshToken");
+          return;
+        }
+  
+        // If the token is about to expire or has already expired
+        if (now.getTime() > expiresAt.getTime() - tenMinutes) {
+          fetch('https://chlorinated-harvest-brontomerus.glitch.me/refresh_token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh_token: refreshToken })
+          })
+          .then(response => response.json())
+          .then(data => {
+            const newAccessToken = 'oauth:' + data.access_token;
+            const newRefreshToken = data.refresh_token;
+            const newExpiresIn = data.expires_in;
+          
+            // Convert expiresIn to a date and timestamp
+            const newExpiresAt = new Date().getTime() + newExpiresIn * 1000;
+          
+            chrome.storage.sync.set({token: newAccessToken, refreshToken: newRefreshToken, expiresAt: newExpiresAt}, () => {
+              console.log("Token refreshed");
+              this.authToken = newAccessToken; // Update the authToken property
+              resolve();
+            });
+          })
+          .catch(error => {
+            console.error('Failed to refresh token:', error);
+            reject(error);
+          });
+        } else {
+          resolve();
+        }
+      });
+    });
   }
 
   verifyAuthTokenAndUserName() {
@@ -77,11 +127,15 @@ class ChatObserver {
       if (!this.authToken || !this.userName) {
         chrome.runtime.sendMessage({ action: "openOptionsPage" });
       } else {
-        try {
-          this.initializeChatConnection();
-        } catch (error) {
-          console.error("Failed to connect to chat due to:", error);
-        }
+        this.refreshTokenIfNeeded().then(() => {
+          try {
+            this.initializeChatConnection();
+          } catch (error) {
+            console.error("Failed to connect to chat due to:", error);
+          }
+        }).catch(error => {
+          console.error("Failed to refresh token:", error);
+        });
       }
     });
   }
@@ -242,6 +296,7 @@ class ChatObserver {
     console.log(`Preview2: ${previewMessage2}`);
   }
 }
+
 window.addEventListener("load", (event) => {
   new ChatObserver();
 });

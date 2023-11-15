@@ -8,30 +8,25 @@
   <body>
     <div class="container">
       <p class="emoji">🔔Setup</p>
-      <h2>Step 1</h2>
-      <p>Generate OAuth token from your twitch, so we are able to send the ping.</p>
+      <p>Connect to Twitch, this is because we use <a href="https://tmijs.com/" target="_blank">tmi.js</a> to send the ping.</p>
       <div class="flex-container">
-        <button id="oauthButton" >Generate token</button>
-        <p>Do it manually: <a href="https://twitchapps.com/tmi/" target="_blank">Twitchapps.com</a></p>
-        
-      </div>
-      <br>
-      <h2>Step 2</h2>
-      <p>Insert your Twitch username and the OAuth token you generated in step 1 and click save.</p>
+        <button id="oauthButton" style="text-align: left; padding-left: 10px;"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="13" height="13" viewBox="0 0 50 50"
+          style="fill:#FFFFFF; margin-right: 5px;">
+          <path d="M 5.3125 1 L 2 9.8125 L 2 43 L 13 43 L 13 49 L 20.40625 49 L 26.40625 43 L 35.40625 43 L 48 30.4375 L 48 1 Z M 11 6 L 43 6 L 43 28 L 37 34 L 25 34 L 19 40 L 19 34 L 11 34 Z M 20 13 L 20 27 L 26 27 L 26 13 Z M 30 13 L 30 27 L 36 27 L 36 13 Z"></path>
+          </svg> Connect to twitch</button>      </div>
       <br>
       <form id="tokenForm">
         <label for="username">Twitch username</label>
-        <input type="text" id="username" name="username">
+        <input type="text" id="username" name="username" disabled>
         <label for="token">OAuth token</label>
-        <input type="text" id="token" name="token">
+        <input type="text" id="token" name="token" disabled>
         <div class="btnContainer">
-          <input type="submit" value="Save">
           <button id="deleteButton" type="button">Discard</button>
         </div>
+        <p id="countdown"></p>
       </form>
       <br>
       <div id="stepThree">
-        <h2>Step 3</h2>
         <div style="position: relative; display: flex; align-items: center;">
           <img src="https://static-cdn.jtvnw.net/badges/v1/cfc78670-1b59-42d4-970a-305962e445dd/1" alt="rank">
           <p id="biroman">Biroman<p style="margin-right: 5px; font-weight: bold;">:</p></p>
@@ -46,7 +41,7 @@
         <h1>
           Custom blacklist
         </h1>
-        <p>Add any usernames you wish to exclude from receiving the ping.</p>
+        <p>Add or remove any usernames you wish to exclude from receiving the ping.</p>
         <input type="text" id="blacklist" name="blacklist" placeholder="Username">
       </form>
       <div id="blacklistDisplay" class="blacklistContainer">
