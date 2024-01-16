@@ -1,5 +1,6 @@
 const CHAT_CONTAINER_SELECTOR = ".seventv-chat-input-container";
 const MAX_USERS = 20;
+const MIN_USERS = 15;
 
 class ChatObserver {
   constructor() {
@@ -55,6 +56,9 @@ class ChatObserver {
       "zostradamus",
       "zullxv",
       "zza_ow",
+      "790w",
+      "wizwot",
+      "nothingsinger",
     ];
 
     chrome.storage.sync.set({ blacklist: blacklistedUserNames });
@@ -78,41 +82,41 @@ class ChatObserver {
         const refreshToken = result.refreshToken;
         const now = new Date();
         const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
-  
+
         if (!expiresAt || !refreshToken) {
           console.error("Missing expiresAt or refreshToken");
           reject("Missing expiresAt or refreshToken");
           return;
         }
-  
+
         // If the token is about to expire or has already expired
         if (now.getTime() > expiresAt.getTime() - tenMinutes) {
-          fetch('https://chlorinated-harvest-brontomerus.glitch.me/refresh_token', {
-            method: 'POST',
+          fetch("https://chlorinated-harvest-brontomerus.glitch.me/refresh_token", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ refresh_token: refreshToken })
+            body: JSON.stringify({ refresh_token: refreshToken }),
           })
-          .then(response => response.json())
-          .then(data => {
-            const newAccessToken = 'oauth:' + data.access_token;
-            const newRefreshToken = data.refresh_token;
-            const newExpiresIn = data.expires_in;
-          
-            // Convert expiresIn to a date and timestamp
-            const newExpiresAt = new Date().getTime() + newExpiresIn * 1000;
-          
-            chrome.storage.sync.set({token: newAccessToken, refreshToken: newRefreshToken, expiresAt: newExpiresAt}, () => {
-              console.log("Token refreshed");
-              this.authToken = newAccessToken; // Update the authToken property
-              resolve();
+            .then((response) => response.json())
+            .then((data) => {
+              const newAccessToken = "oauth:" + data.access_token;
+              const newRefreshToken = data.refresh_token;
+              const newExpiresIn = data.expires_in;
+
+              // Convert expiresIn to a date and timestamp
+              const newExpiresAt = new Date().getTime() + newExpiresIn * 1000;
+
+              chrome.storage.sync.set({ token: newAccessToken, refreshToken: newRefreshToken, expiresAt: newExpiresAt }, () => {
+                console.log("Token refreshed");
+                this.authToken = newAccessToken; // Update the authToken property
+                resolve();
+              });
+            })
+            .catch((error) => {
+              console.error("Failed to refresh token:", error);
+              reject(error);
             });
-          })
-          .catch(error => {
-            console.error('Failed to refresh token:', error);
-            reject(error);
-          });
         } else {
           resolve();
         }
@@ -127,22 +131,24 @@ class ChatObserver {
       if (!this.authToken || !this.userName) {
         chrome.runtime.sendMessage({ action: "openOptionsPage" });
       } else {
-        this.refreshTokenIfNeeded().then(() => {
-          try {
-            this.initializeChatConnection();
-          } catch (error) {
-            console.error("Failed to connect to chat due to:", error);
-          }
-        }).catch(error => {
-          console.error("Failed to refresh token:", error);
-        });
+        this.refreshTokenIfNeeded()
+          .then(() => {
+            try {
+              this.initializeChatConnection();
+            } catch (error) {
+              console.error("Failed to connect to chat due to:", error);
+            }
+          })
+          .catch((error) => {
+            console.error("Failed to refresh token:", error);
+          });
       }
     });
   }
 
   collectUserNames(userName) {
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
-    const forbiddenWords = ["trans"]; //Preventing timeouts
+    const forbiddenWords = ["trans", "nibor", "walrus", "whale", "adept"]; //Preventing timeouts
 
     if (forbiddenWords.some((word) => userName.toLowerCase().includes(word))) {
       return;
@@ -275,7 +281,7 @@ class ChatObserver {
       this.chatClient.say(this.channelName, `${collectedNames1} \n\nSOYSCREAM ALERT`).catch((error) => {
         console.error("Failed to send message:", error);
       });
-      if (this.uniqueUserNames2.length >= MAX_USERS) {
+      if (this.uniqueUserNames2.length >= MIN_USERS && this.uniqueUserNames2.length <= MAX_USERS) {
         setTimeout(() => {
           this.chatClient.say(this.channelName, `${collectedNames2} \n\nSOYSCREAM ALERT`).catch((error) => {
             console.error("Failed to send message:", error);
