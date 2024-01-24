@@ -2,9 +2,85 @@ const oauthButton = document.getElementById("oauthButton");
 const username = document.getElementById("username").value;
 let bufferTime = 60;
 
-const permanentBlacklist = ["schnozebot", "fossabot", "biroman", "xqc", "thepositivebot", "darkface____"];
+const blacklistUrl = "https://raw.githubusercontent.com/biroman/chatping-blacklist/main/blacklist.json";
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get("token");
+let alwaysBlocked;
+
+async function fetchBlacklist() {
+  try {
+    let response = await fetch(blacklistUrl);
+    let data = await response.json();
+
+    alwaysBlocked = [...data.alwaysBlocked, ...data.premium];
+
+    chrome.storage.sync.set({ staticBlock: alwaysBlocked }, function () {
+      console.log("Blacklist is set to alwaysBlocked list");
+    });
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+fetchBlacklist();
+
+document.getElementById("toggleSwitch").addEventListener("change", function (e) {
+  const toggleSwitch = document.getElementById("toggleSwitch");
+  const modList = [
+    "a_seagull",
+    "aiden",
+    "aimbotcalvin",
+    "antvenom",
+    "ben",
+    "crtvly",
+    "eff2ct",
+    "evomanny",
+    "hydration",
+    "infinitea",
+    "jayne",
+    "jessesmfi",
+    "kaanvict",
+    "legoenthusiast",
+    "m0xyy",
+    "mendo",
+    "mightyoaks",
+    "moobot",
+    "netcat",
+    "novakr",
+    "numbratv",
+    "nvez",
+    "pajlada",
+    "pokelawls",
+    "reckful",
+    "shadder2k",
+    "sinatraa",
+    "sodapoppin",
+    "spanova",
+    "supertf",
+    "surefour",
+    "thisapear",
+    "timthetatman",
+    "topkej",
+    "trainwreckstv",
+    "zostradamus",
+    "zullxv",
+    "zza_ow",
+  ]; // Add your predefined usernames here
+
+  chrome.storage.sync.get(["blacklist"], function (data) {
+    let blacklist = data.blacklist || [];
+
+    if (toggleSwitch.checked) {
+      // If the toggle switch is checked, add the predefined usernames to the blacklist
+      blacklist = [...new Set([...blacklist, ...modList])];
+    } else {
+      // If the toggle switch is not checked, remove the predefined usernames from the blacklist
+      blacklist = blacklist.filter((username) => !modList.includes(username));
+    }
+
+    chrome.storage.sync.set({ blacklist: blacklist, toggleSwitchState: toggleSwitch.checked }, updateBlacklistDisplay);
+  });
+});
 
 function startCountdown() {
   chrome.storage.sync.get(["expiresAt"], function (data) {
@@ -21,12 +97,12 @@ function startCountdown() {
         return;
       }
 
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      // const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      // const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      // const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      // const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s until token expires`;
+      // countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s until token expires`;
     }, 1000);
   });
 }
@@ -120,7 +196,7 @@ function fetchUsername(token) {
 }
 
 window.onload = function () {
-  chrome.storage.sync.get(["token", "username"], function (data) {
+  chrome.storage.sync.get(["token", "username", "toggleSwitchState"], function (data) {
     if (data.token && data.username) {
       document.getElementById("token").value = data.token;
       document.getElementById("username").value = data.username;
@@ -139,6 +215,8 @@ window.onload = function () {
       oauthButton.style.backgroundColor = "#9147ff";
       oauthButton.disabled = false;
     }
+    const toggleSwitch = document.getElementById("toggleSwitch");
+    toggleSwitch.checked = data.toggleSwitchState || false;
   });
   startCountdown();
 };
@@ -149,7 +227,7 @@ document.getElementById("blacklistForm").addEventListener("submit", function (e)
   chrome.storage.sync.get(["blacklist"], function (data) {
     let blacklist = data.blacklist || [];
     blacklist = blacklist.map((name) => name.toLowerCase());
-    if (username && !blacklist.includes(username) && !permanentBlacklist.includes(username)) {
+    if (username && !blacklist.includes(username)) {
       blacklist.push(username);
       chrome.storage.sync.set({ blacklist: blacklist }, function () {
         document.getElementById("blacklist").value = "";
@@ -166,12 +244,17 @@ chrome.storage.sync.get(null, function (items) {
 });
 
 function updateBlacklistDisplay() {
+  if (!alwaysBlocked) {
+    fetchBlacklist().then(updateBlacklistDisplay);
+    return;
+  }
+
   chrome.storage.sync.get(["blacklist"], function (data) {
     const blacklistDisplay = document.getElementById("blacklistDisplay");
     blacklistDisplay.innerHTML = "";
     const blacklist = data.blacklist || [];
     blacklist.forEach(function (username) {
-      if (!permanentBlacklist.includes(username)) {
+      if (!alwaysBlocked.includes(username)) {
         const usernameDiv = document.createElement("div");
         usernameDiv.textContent = username;
         usernameDiv.style.display = "inline-flex";
@@ -196,30 +279,6 @@ function updateBlacklistDisplay() {
   });
 }
 
-// document.getElementById('oauthButton').addEventListener('click', function() {
-//   // Get the current tab
-//   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-//     var currentTab = tabs[0];
-
-//     // Open the new tab
-//     chrome.tabs.create({ url: 'https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=q6batx0epp608isickayubi39itsckt&redirect_uri=https://twitchapps.com/tmi/&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor' }, function(tab) {
-//       var checkInterval = setInterval(function() {
-//         chrome.tabs.get(tab.id, function(updatedTab) {
-//           if (updatedTab.url.includes('access_token')) {
-//             clearInterval(checkInterval);
-//             var token = new URL(updatedTab.url).hash.split('&')[0].split('=')[1];
-//             document.getElementById('token').value = "oauth:" + token;
-//             chrome.tabs.remove(updatedTab.id);
-
-//             // Focus back on the original tab
-//             chrome.tabs.update(currentTab.id, {active: true});
-//           }
-//         });
-//       }, 1000);
-//     });
-//   });
-// });
-
 document.getElementById("deleteButton").addEventListener("click", function () {
   const token = document.getElementById("token").value;
   const username = document.getElementById("username").value;
@@ -231,7 +290,7 @@ document.getElementById("deleteButton").addEventListener("click", function () {
     return;
   }
 
-  chrome.storage.sync.remove(["token", "username", "refreshToken"], function () {
+  chrome.storage.sync.remove(["token", "username", "refreshToken", "blacklist"], function () {
     document.getElementById("token").value = "";
     document.getElementById("username").value = "";
     document.getElementById("token").disabled = false;

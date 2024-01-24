@@ -1,67 +1,16 @@
 const CHAT_CONTAINER_SELECTOR = ".seventv-chat-input-container";
 const MAX_USERS = 20;
 const MIN_USERS = 15;
+let staticBlock;
 
 class ChatObserver {
   constructor() {
-    const blacklistedUserNames = [
-      "schnozebot",
-      "fossabot",
-      "biroman",
-      "xqc",
-      "thepositivebot",
-      "darkface____",
-      "a_seagull",
-      "aiden",
-      "aimbotcalvin",
-      "antvenom",
-      "ben",
-      "crtvly",
-      "eff2ct",
-      "evomanny",
-      "hnlbot",
-      "hydration",
-      "infinitea",
-      "jayne",
-      "jessesmfi",
-      "kaanvict",
-      "legoenthusiast",
-      "logviewer",
-      "m0xyy",
-      "mendo",
-      "mightyoaks",
-      "moobot",
-      "netcat",
-      "nightbot",
-      "novakr",
-      "numbratv",
-      "nvez",
-      "ohbot",
-      "pajlada",
-      "pokelawls",
-      "reckful",
-      "shadder2k",
-      "sinatraa",
-      "sodapoppin",
-      "spanova",
-      "streamelements",
-      "supertf",
-      "surefour",
-      "thisapear",
-      "thonkbot",
-      "timthetatman",
-      "topkej",
-      "trainwreckstv",
-      "xqcbot",
-      "zostradamus",
-      "zullxv",
-      "zza_ow",
-      "790w",
-      "wizwot",
-      "nothingsinger",
-    ];
+    chrome.storage.sync.get(["blacklist", "staticBlock"], (data) => {
+      const blacklistedUserNames = data.blacklist || ["790w", "wizwot", "nothingsinger"];
+      staticBlock = data.staticBlock || false;
+      chrome.storage.sync.set({ blacklist: blacklistedUserNames });
+    });
 
-    chrome.storage.sync.set({ blacklist: blacklistedUserNames });
     this.mutationObserver = new MutationObserver(() => this.observeChat());
     this.mutationObserver.observe(document.body, { childList: true, subtree: true });
     this.chatContainerElement = null;
@@ -148,9 +97,10 @@ class ChatObserver {
 
   collectUserNames(userName) {
     const englishLettersRegex = /^[a-zA-Z0-9\s\-_]+$/;
-    const forbiddenWords = ["trans", "nibor", "walrus", "whale", "adept"]; //Preventing timeouts
+    // const forbiddenWords = ["trans", "nibor", "walrus", "whale", "adept", "nothingsinger", "darkface", "biroman", "wizwot", "boozooi", "ThePositiveBot", "schnozebot", "nightbot", "logviewer", "hnlbot", "fossabot", "xqcbot", "thonkbot", "streamelements", "ohbot"]; //Preventing timeouts
 
-    if (forbiddenWords.some((word) => userName.toLowerCase().includes(word))) {
+    if (staticBlock.some((word) => userName.toLowerCase().includes(word))) {
+      console.log("BLOCKED NAME");
       return;
     }
 
